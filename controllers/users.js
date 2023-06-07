@@ -40,12 +40,12 @@ const getUser = (req, res) => {
 
 const getUserByID = (req, res) => {
   User.findById(req.params.id)
-    .orFail(() => new Error('Not found'))
+    .orFail(() => new Error('User not found'))
     .then((user) => res.status(200).send(user))
     .catch((error) => {
-      if (error.message === 'Not found') {
-        res.status(404).send({
-          message: `Пользователь по указанному ${req.params.id} не найден.`,
+      if (error.message === 'User not found') {
+        res.status(400).send({
+          message: `Пользователь по указанному id: ${req.params.id} не найден.`,
         });
       } else {
         res.status(500).send({
@@ -58,16 +58,16 @@ const getUserByID = (req, res) => {
 const updateUserinfo = (req, res) => {
   const { name, about } = req.body;
   const info = { name, about };
-  User.findByIdAndUpdate(req.user._id, info, { new: true })
+  User.findByIdAndUpdate(req.user._id, info, { new: true, runValidators: true })
     .then((user) => res.status(200).send({ user }))
     .catch((error) => {
-      if (error.message.includes('validation failed')) {
+      if (error.message.includes('Validation failed')) {
         res.status(400).send({
           message: 'Переданы некорректные данные при обновлении профиля.',
         });
       } if (error.message === 'Not found') {
         res.status(404).send({
-          message: `Пользователь по указанному ${req.user._id} не найден.`,
+          message: `Пользователь по указанному id: ${req.user._id} не найден.`,
         });
       } else {
         res.status(500).send({
@@ -80,7 +80,7 @@ const updateUserinfo = (req, res) => {
 const updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
   const newAvatar = { avatar };
-  User.findByIdAndUpdate(req.user._id, newAvatar, { new: true })
+  User.findByIdAndUpdate(req.user._id, newAvatar, { new: true, runValidators: true })
     .then((user) => res.status(200).send({ user }))
     .catch((error) => {
       if (error.message.includes('validation failed')) {
@@ -89,7 +89,7 @@ const updateUserAvatar = (req, res) => {
         });
       } if (error.message === 'Not found') {
         res.status(404).send({
-          message: `Пользователь по указанному ${req.user._id} не найден.`,
+          message: `Пользователь по указанному id: ${req.user._id} не найден.`,
         });
       } else {
         res.status(500).send({

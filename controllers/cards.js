@@ -22,7 +22,7 @@ const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then(() => res.status(200).send({}))
     .catch(() => res.status(404).send({
-      message: `Карточка с указанным ${req.params.cardId} не найдена.`,
+      message: `Карточка с указанным id: ${req.params.cardId} не найдена.`,
     }));
 };
 
@@ -50,17 +50,18 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(() => new Error('Card not found'))
     .then(() => {
       res.status(200).send({});
     })
     .catch((error) => {
-      if (error.message.includes('validation failed')) {
+      if (error.message.includes('validation failed') || error.message === 'Card not found') {
         res.status(400).send({
           message: 'Переданы некорректные данные для постановки лайка.',
         });
-      } if (error.message === 'Not found') {
+      } if (error.message === 'Card not found' || error.message === 'Not Found') {
         res.status(404).send({
-          message: `Передан несуществующий ${req.params.cardId} карточки.`,
+          message: `Передан несуществующий id: ${req.params.cardId} карточки.`,
         });
       } else {
         res.status(500).send({
@@ -76,6 +77,7 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
+    .orFail(() => new Error('Card not found'))
     .then(() => {
       res.status(200).send({});
     })
@@ -84,9 +86,9 @@ const dislikeCard = (req, res) => {
         res.status(400).send({
           message: 'Переданы некорректные данные для снятия лайка.',
         });
-      } if (error.message === 'Not found') {
+      } if (error.message === 'Not found' || error.message === 'Card not found') {
         res.status(404).send({
-          message: `Передан несуществующий ${req.params.cardId} карточки.`,
+          message: `Передан несуществующий id: ${req.params.cardId} карточки.`,
         });
       } else {
         res.status(500).send({
