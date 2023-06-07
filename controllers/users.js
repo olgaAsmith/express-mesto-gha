@@ -7,13 +7,14 @@ const createUser = (req, res) => {
   User.create(newUser)
     .then((user) => res.status(201).send(user))
     .catch((error) => {
-      if (error.message === 'Bad Request') {
+      if (error.message.includes('validation failed')) {
         res.status(400).send({
           message: 'Переданы некорректные данные при создании пользователя.',
         });
       } else {
         res.status(500).send({
-          message: 'Ошибка по умолчанию.',
+          /* message: 'Ошибка по умолчанию.', */
+          message: `${error.message}`,
         });
       }
     });
@@ -25,7 +26,7 @@ const getUser = (req, res) => {
       res.status(200).json(users);
     })
     .catch((error) => {
-      if (error.message === 'Bad Request') {
+      if (error.message.includes('validation failed')) {
         res.status(400).send({
           message: 'Переданы некорректные данные при создании пользователя.',
         });
@@ -39,6 +40,7 @@ const getUser = (req, res) => {
 
 const getUserByID = (req, res) => {
   User.findById(req.params.id)
+    .orFail(() => new Error('Not found'))
     .then((user) => res.status(200).send(user))
     .catch((error) => {
       if (error.message === 'Not found') {
@@ -56,10 +58,10 @@ const getUserByID = (req, res) => {
 const updateUserinfo = (req, res) => {
   const { name, about } = req.body;
   const info = { name, about };
-  User.findByIdAndUpdate(req.user._id, info)
+  User.findByIdAndUpdate(req.user._id, info, { new: true })
     .then((user) => res.status(200).send({ user }))
     .catch((error) => {
-      if (error.message === 'Bad Request') {
+      if (error.message.includes('validation failed')) {
         res.status(400).send({
           message: 'Переданы некорректные данные при обновлении профиля.',
         });
@@ -78,10 +80,10 @@ const updateUserinfo = (req, res) => {
 const updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
   const newAvatar = { avatar };
-  User.findByIdAndUpdate(req.user._id, newAvatar)
+  User.findByIdAndUpdate(req.user._id, newAvatar, { new: true })
     .then((user) => res.status(200).send({ user }))
     .catch((error) => {
-      if (error.message === 'Bad Request') {
+      if (error.message.includes('validation failed')) {
         res.status(400).send({
           message: 'Переданы некорректные данные при обновлении аватара.',
         });

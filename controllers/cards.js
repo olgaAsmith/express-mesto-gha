@@ -6,7 +6,7 @@ const createCard = (req, res) => {
   Card.create(newCard)
     .then((card) => res.status(201).send(card))
     .catch((error) => {
-      if (error.message === 'Bad Request') {
+      if (error.message.includes('validation failed')) {
         res.status(400).send({
           message: 'Переданы некорректные данные при создании карточки.',
         });
@@ -32,7 +32,7 @@ const getAllCards = (req, res) => {
       res.status(200).json(cards);
     })
     .catch((error) => {
-      if (error.message === 'Bad Request') {
+      if (error.message.includes('validation failed')) {
         res.status(400).send({
           message: 'Переданы некорректные данные при создании карточки.',
         });
@@ -54,7 +54,7 @@ const likeCard = (req, res) => {
       res.status(200).send({});
     })
     .catch((error) => {
-      if (error.message === 'Bad Request') {
+      if (error.message.includes('validation failed')) {
         res.status(400).send({
           message: 'Переданы некорректные данные для постановки лайка.',
         });
@@ -80,7 +80,7 @@ const dislikeCard = (req, res) => {
       res.status(200).send({});
     })
     .catch((error) => {
-      if (error.message === 'Bad Request') {
+      if (error.message.includes('validation failed')) {
         res.status(400).send({
           message: 'Переданы некорректные данные для снятия лайка.',
         });
