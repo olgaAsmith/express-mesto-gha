@@ -14,9 +14,6 @@ app.use((req, res, next) => {
   req.user = {
     _id: '647dfc9d4abfbf8c3b3eb4b5',
   };
-  res.status(404).send({
-    message: 'Такой страницы не существует',
-  });
   next();
 });
 
