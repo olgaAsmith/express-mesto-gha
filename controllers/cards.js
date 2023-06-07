@@ -20,6 +20,7 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
+    .orFail(() => new Error('Card not found'))
     .then(() => res.status(200).send({}))
     .catch((error) => {
       if (error.name === 'CastError') {
