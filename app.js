@@ -19,6 +19,12 @@ app.use((req, res, next) => {
 
 app.use(router);
 
+app.use('/*', (req, res) => {
+  res.status(404).send({
+    message: 'Указанной Вами страницы не существует',
+  });
+});
+
 app.listen(3000, () => {
   // eslint-disable-next-line no-console
   console.log('Start...');

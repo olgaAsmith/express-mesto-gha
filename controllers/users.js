@@ -43,8 +43,12 @@ const getUserByID = (req, res) => {
     .orFail(() => new Error('User not found'))
     .then((user) => res.status(200).send(user))
     .catch((error) => {
-      if (error.message === 'User not found') {
+      if (error.name === 'CastError') {
         res.status(400).send({
+          message: `Некорректный id: ${req.params.id}`,
+        });
+      } else if (error.message === 'User not found') {
+        res.status(404).send({
           message: `Пользователь по указанному id: ${req.params.id} не найден.`,
         });
       } else {
@@ -65,7 +69,7 @@ const updateUserinfo = (req, res) => {
         res.status(400).send({
           message: 'Переданы некорректные данные при обновлении профиля.',
         });
-      } if (error.message === 'Not found') {
+      } else if (error.message === 'Not found') {
         res.status(404).send({
           message: `Пользователь по указанному id: ${req.user._id} не найден.`,
         });
