@@ -1,26 +1,29 @@
 /* eslint-disable no-console */
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 
 const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  const newUser = { name, about, avatar };
-  User.create(newUser)
-    .then((user) => res.status(201).send(user))
-    .catch((error) => {
-      if (error.message.includes('validation failed')) {
-        res.status(400).send({
-          message: 'Переданы некорректные данные при создании пользователя.',
+  bcrypt.hash(req.body.password, 10)
+    .then((hashed) => {
+      User.create({ ...req.body, password: hashed })
+        .then((user) => res.status(201).send(user))
+        .catch((error) => {
+          if (error.message.includes('validation failed')) {
+            res.status(400).send({
+              message: 'Переданы некорректные данные при создании пользователя.',
+            });
+          } else {
+            res.status(500).send({
+              message: `${error.message}`,
+            });
+          }
         });
-      } else {
-        res.status(500).send({
-          /* message: 'Ошибка по умолчанию.', */
-          message: `${error.message}`,
-        });
-      }
-    });
+    })
+    .catch();
 };
 
 const getUser = (req, res) => {
+  console.log("123");
   User.find()
     .then((users) => {
       res.status(200).json(users);
