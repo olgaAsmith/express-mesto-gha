@@ -13,7 +13,7 @@ const createUser = (req, res, next) => {
   bcrypt.hash(req.body.password, 10)
     .then((hashed) => {
       User.create({ ...req.body, password: hashed })
-        .then((user) => res.status(201).send(user))
+        .then((user) => res.status(201).send({ message: `Регистрация пользователя ${user.name} прошла успешно` }))
         .catch((error) => {
           if (error.message.includes('validation failed')) {
             next(new ValidateError());
@@ -59,12 +59,8 @@ const getUser = (req, res, next) => {
     .then((users) => {
       res.status(200).json(users);
     })
-    .catch((error) => {
-      if (error.message.includes('validation failed')) {
-        next(new ValidateError());
-      } else {
-        next(new InternalServerError());
-      }
+    .catch(() => {
+      next(new InternalServerError());
     });
 };
 
