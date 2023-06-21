@@ -7,7 +7,7 @@ const celebrate = require('../middlewares/celebrate');
 router.get('/', getUser);
 router.get('/me', getUserMe);
 router.get('/:id', celebrate.userID, getUserByID);
-router.patch('/me', celebrate.userInfo, updateUserinfo);
-router.patch('/me/avatar', celebrate.userInfo, updateUserAvatar);
+router.patch('/me', celebrate.userUpdate, updateUserinfo);
+router.patch('/me/avatar', celebrate.userUpdate, updateUserAvatar);
 
 module.exports = router;

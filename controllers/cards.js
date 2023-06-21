@@ -29,7 +29,7 @@ const deleteCard = (req, res, next) => {
           message: 'Карточка успешно удалена',
         });
       } else {
-        throw new Forbidden();
+        next(new Forbidden());
       }
     })
     .catch((error) => {
@@ -63,7 +63,7 @@ const likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => new NotFound())
+    .orFail(() => new Error('Card not found'))
     .then(() => {
       res.status(200).send({});
     })
@@ -71,7 +71,7 @@ const likeCard = (req, res, next) => {
       if (error.name === 'CastError') {
         next(new ValidateError());
       } else if (error.message === 'Card not found' || error.message === 'Not Found') {
-        next(new IncorrectData());
+        next(new NotFound());
       } else {
         next(new InternalServerError());
       }
@@ -84,7 +84,7 @@ const dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => new NotFound())
+    .orFail(() => new Error('Card not found'))
     .then(() => {
       res.status(200).send({});
     })
