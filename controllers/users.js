@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 const bcrypt = require('bcryptjs');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const createUser = (req, res) => {
@@ -22,8 +24,37 @@ const createUser = (req, res) => {
     .catch();
 };
 
+const login = (req, res) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      console.log(user);
+      const token = jwt.sign(
+        { _id: user._id },
+        'secret',
+      );
+      res.cookie('token', token, {
+        maxAge: 604800000,
+        httpOnly: true,
+      });
+      res.send({ token });
+    })
+    .catch(() => {
+      res.status(401).send({
+        message: 'Переданы некорректные данные при входе contr.',
+      });
+    });
+};
+
+const getUserMe = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => res.status(200).send(user))
+    .catch(() => {
+    });
+};
+
 const getUser = (req, res) => {
-  console.log("123");
+  console.log('123');
   User.find()
     .then((users) => {
       res.status(200).json(users);
@@ -31,7 +62,7 @@ const getUser = (req, res) => {
     .catch((error) => {
       if (error.message.includes('validation failed')) {
         res.status(400).send({
-          message: 'Переданы некорректные данные при создании пользователя.',
+          message: 'Переданы некорректные данные пользователя.',
         });
       } else {
         res.status(500).send({
@@ -107,5 +138,5 @@ const updateUserAvatar = (req, res) => {
 };
 
 module.exports = {
-  getUser, createUser, getUserByID, updateUserinfo, updateUserAvatar,
+  getUser, createUser, getUserByID, updateUserinfo, updateUserAvatar, login, getUserMe,
 };

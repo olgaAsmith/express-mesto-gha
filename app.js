@@ -1,6 +1,12 @@
+/* eslint-disable import/no-extraneous-dependencies */
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const mongoose = require('mongoose');
 const router = require('./routes/routes');
+const { authorize } = require('./middlewares/auth');
+const {
+  createUser, login,
+} = require('./controllers/users');
 
 const app = express();
 
@@ -9,13 +15,12 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 });
 
 app.use(express.json());
+app.use(cookieParser());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '647dfc9d4abfbf8c3b3eb4b5',
-  };
-  next();
-});
+app.post('/signup', createUser);
+app.post('/signin', login);
+
+app.use(authorize);
 
 app.use(router);
 
