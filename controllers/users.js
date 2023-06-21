@@ -13,7 +13,12 @@ const createUser = (req, res, next) => {
   bcrypt.hash(req.body.password, 10)
     .then((hashed) => {
       User.create({ ...req.body, password: hashed })
-        .then((user) => res.status(201).send({ message: `Регистрация пользователя ${user.name} прошла успешно` }))
+        .then((user) => res.status(201).send(
+          {
+            // eslint-disable-next-line max-len
+            name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user._id,
+          },
+        ))
         .catch((error) => {
           if (error.message.includes('validation failed')) {
             next(new ValidateError());
