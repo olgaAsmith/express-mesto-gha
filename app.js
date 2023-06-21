@@ -7,6 +7,8 @@ const { authorize } = require('./middlewares/auth');
 const {
   createUser, login,
 } = require('./controllers/users');
+const errorType = require('./middlewares/error');
+const NotExist = require('./errors/NotExist');
 
 const app = express();
 
@@ -24,13 +26,13 @@ app.use(authorize);
 
 app.use(router);
 
-app.use('/*', (req, res) => {
-  res.status(404).send({
-    message: 'Указанной Вами страницы не существует',
-  });
+app.use('/*', (req, res, next) => {
+  next(new NotExist());
 });
+
+app.use(errorType);
 
 app.listen(3000, () => {
   // eslint-disable-next-line no-console
-  console.log('Start...');
+  console.log('Start...is 0k');
 });

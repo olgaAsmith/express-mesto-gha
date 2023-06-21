@@ -1,5 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
+const IncorrectLogin = require('../errors/IncorrectLogin');
 
 const authorize = (req, res, next) => {
   const { token } = req.cookies;
@@ -7,7 +8,7 @@ const authorize = (req, res, next) => {
   try {
     payload = jwt.verify(token, 'secret');
   } catch (error) {
-    res.status(401).send({ message: 'Доступно только для авторизованных пользователей' });
+    next(new IncorrectLogin());
   }
   req.user = payload;
   next();

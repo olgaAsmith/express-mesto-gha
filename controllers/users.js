@@ -3,32 +3,34 @@ const bcrypt = require('bcryptjs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const ValidateError = require('../errors/ValidateError');
+const InternalServerError = require('../errors/InternalServerError');
+const Conflict = require('../errors/Conflict');
+const IncorrectData = require('../errors/IncorrectData');
+const NotFound = require('../errors/NotFound');
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   bcrypt.hash(req.body.password, 10)
     .then((hashed) => {
       User.create({ ...req.body, password: hashed })
         .then((user) => res.status(201).send(user))
         .catch((error) => {
           if (error.message.includes('validation failed')) {
-            res.status(400).send({
-              message: 'Переданы некорректные данные при создании пользователя.',
-            });
+            next(new ValidateError());
+          } else if (error.code === 11000) {
+            next(new Conflict());
           } else {
-            res.status(500).send({
-              message: `${error.message}`,
-            });
+            next(new InternalServerError());
           }
         });
     })
-    .catch();
+    .catch(next);
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      console.log(user);
       const token = jwt.sign(
         { _id: user._id },
         'secret',
@@ -40,99 +42,75 @@ const login = (req, res) => {
       res.send({ token });
     })
     .catch(() => {
-      res.status(401).send({
-        message: 'Переданы некорректные данные при входе contr.',
-      });
+      next(new IncorrectData());
     });
 };
 
-const getUserMe = (req, res) => {
+const getUserMe = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => res.status(200).send(user))
     .catch(() => {
+      next(new InternalServerError());
     });
 };
 
-const getUser = (req, res) => {
-  console.log('123');
+const getUser = (req, res, next) => {
   User.find()
     .then((users) => {
       res.status(200).json(users);
     })
     .catch((error) => {
       if (error.message.includes('validation failed')) {
-        res.status(400).send({
-          message: 'Переданы некорректные данные пользователя.',
-        });
+        next(new ValidateError());
       } else {
-        res.status(500).send({
-          message: 'Ошибка по умолчанию.',
-        });
+        next(new InternalServerError());
       }
     });
 };
 
-const getUserByID = (req, res) => {
+const getUserByID = (req, res, next) => {
   User.findById(req.params.id)
     .orFail(() => new Error('User not found'))
     .then((user) => res.status(200).send(user))
     .catch((error) => {
       if (error.name === 'CastError') {
-        res.status(400).send({
-          message: `Некорректный id: ${req.params.id}`,
-        });
+        next(new ValidateError());
       } else if (error.message === 'User not found') {
-        res.status(404).send({
-          message: `Пользователь по указанному id: ${req.params.id} не найден.`,
-        });
+        next(new NotFound());
       } else {
-        res.status(500).send({
-          message: 'Ошибка по умолчанию.',
-        });
+        next(new InternalServerError());
       }
     });
 };
 
-const updateUserinfo = (req, res) => {
+const updateUserinfo = (req, res, next) => {
   const { name, about } = req.body;
   const info = { name, about };
   User.findByIdAndUpdate(req.user._id, info, { new: true, runValidators: true })
     .then((user) => res.status(200).send({ user }))
     .catch((error) => {
-      if (error.message.includes('Validation failed')) {
-        res.status(400).send({
-          message: 'Переданы некорректные данные при обновлении профиля.',
-        });
-      } else if (error.message === 'Not found') {
-        res.status(404).send({
-          message: `Пользователь по указанному id: ${req.user._id} не найден.`,
-        });
+      if (error.message.includes('validation failed')) {
+        next(new ValidateError());
+      } else if (error.message === 'User not found') {
+        next(new NotFound());
       } else {
-        res.status(500).send({
-          message: 'Ошибка по умолчанию.',
-        });
+        next(new InternalServerError());
       }
     });
 };
 
-const updateUserAvatar = (req, res) => {
+const updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
   const newAvatar = { avatar };
   User.findByIdAndUpdate(req.user._id, newAvatar, { new: true, runValidators: true })
     .then((user) => res.status(200).send({ user }))
     .catch((error) => {
       if (error.message.includes('validation failed')) {
-        res.status(400).send({
-          message: 'Переданы некорректные данные при обновлении аватара.',
-        });
-      } if (error.message === 'Not found') {
-        res.status(404).send({
-          message: `Пользователь по указанному id: ${req.user._id} не найден.`,
-        });
+        next(new ValidateError());
+      } else if (error.message === 'User not found') {
+        next(new NotFound());
       } else {
-        res.status(500).send({
-          message: 'Ошибка по умолчанию.',
-        });
+        next(new InternalServerError());
       }
     });
 };

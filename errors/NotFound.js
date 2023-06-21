@@ -1,8 +1,8 @@
 class NotFound extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'NotFound';
-    this.status = 404;
+  constructor() {
+    super();
+    this.statusCode = 404;
+    this.message = 'Таких данных не существуют';
   }
 }
 
