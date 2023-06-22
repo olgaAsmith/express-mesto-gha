@@ -1,12 +1,9 @@
-/* eslint-disable no-console */
 const bcrypt = require('bcryptjs');
-// eslint-disable-next-line import/no-extraneous-dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ValidateError = require('../errors/ValidateError');
 const InternalServerError = require('../errors/InternalServerError');
 const Conflict = require('../errors/Conflict');
-const IncorrectData = require('../errors/IncorrectData');
 const NotFound = require('../errors/NotFound');
 
 const createUser = (req, res, next) => {
@@ -46,9 +43,7 @@ const login = (req, res, next) => {
       });
       res.send({ token });
     })
-    .catch(() => {
-      next(new IncorrectData());
-    });
+    .catch(next);
 };
 
 const getUserMe = (req, res, next) => {

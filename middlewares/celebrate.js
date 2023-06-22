@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { celebrate, Joi } = require('celebrate');
 
-const regLink = /^https?:\/\/?[a-zA-Z0-9-._~:/?#[\]@!$&'()*+,;=]+(#)?$/;
+const regLink = /https?:\/\/w{0,3}\.?([\w-._~:/?#[\]@!$&'()*+,;=])*\.([\w-._~:/?#[\]@!$&'()*+,;=])/;
 const regID = /^[0-9a-fA-F]{24}$/;
 
 const userInfo = celebrate({
@@ -20,10 +20,15 @@ const userID = celebrate({
   }),
 });
 
-const userUpdate = celebrate({
+const userUpdateInfo = celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
+  }),
+});
+
+const userUpdateAvatar = celebrate({
+  body: Joi.object().keys({
     avatar: Joi.string().regex(regLink),
   }),
 });
@@ -42,5 +47,5 @@ const cardID = celebrate({
 });
 
 module.exports = {
-  userInfo, userID, userUpdate, cardInfo, cardID,
+  userInfo, userID, userUpdateInfo, userUpdateAvatar, cardInfo, cardID,
 };

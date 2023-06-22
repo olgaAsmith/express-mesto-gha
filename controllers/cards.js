@@ -21,13 +21,14 @@ const createCard = (req, res, next) => {
 };
 
 const deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .orFail(() => new Error('Card not found'))
     .then((card) => {
       if (card.owner.includes(req.user._id)) {
-        res.status(200).send({
-          message: 'Карточка успешно удалена',
-        });
+        card.deleteOne()
+          .then(() => res.status(200).send({
+            message: 'Карточка успешно удалена',
+          }));
       } else {
         next(new Forbidden());
       }
@@ -50,7 +51,7 @@ const getAllCards = (req, res, next) => {
     })
     .catch((error) => {
       if (error.message.includes('validation failed')) {
-        next(new IncorrectData());
+        next(new IncorrectData('Доступно только для авторизованных пользователей'));
       } else {
         next(new InternalServerError());
       }
@@ -64,8 +65,8 @@ const likeCard = (req, res, next) => {
     { new: true },
   )
     .orFail(() => new Error('Card not found'))
-    .then(() => {
-      res.status(200).send({});
+    .then((card) => {
+      res.status(200).send(card);
     })
     .catch((error) => {
       if (error.name === 'CastError') {
@@ -85,8 +86,8 @@ const dislikeCard = (req, res, next) => {
     { new: true },
   )
     .orFail(() => new Error('Card not found'))
-    .then(() => {
-      res.status(200).send({});
+    .then((card) => {
+      res.status(200).send(card);
     })
     .catch((error) => {
       if (error.name === 'CastError') {

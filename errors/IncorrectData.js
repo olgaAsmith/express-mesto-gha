@@ -1,8 +1,8 @@
 class IncorrectData extends Error {
-  constructor() {
+  constructor(message) {
     super();
     this.statusCode = 401;
-    this.message = 'Неверный логин или пароль';
+    this.message = message;
   }
 }
 
