@@ -11,6 +11,7 @@ const {
 const errorType = require('./middlewares/error');
 const NotExist = require('./errors/NotExist');
 const celebrate = require('./middlewares/celebrate');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const app = express();
 
@@ -24,6 +25,8 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(express.json());
 app.use(cookieParser());
 
+app.use(requestLogger);
+
 app.post('/signup', celebrate.userInfo, createUser);
 app.post('/signin', celebrate.userInfo, login);
 
@@ -34,6 +37,8 @@ app.use(router);
 app.use('/*', (req, res, next) => {
   next(new NotExist());
 });
+
+app.use(errorLogger);
 
 app.use(errors()); // celebrate errors
 app.use(errorType);
